@@ -8,8 +8,9 @@ class ElementaryParticle
 	string name; 
 	double mass;
 	bool isBoson;
-  
-
+	
+  	
+	
 	void printInfo();   
 	ElementaryParticle(string n, double m, bool b);
 
