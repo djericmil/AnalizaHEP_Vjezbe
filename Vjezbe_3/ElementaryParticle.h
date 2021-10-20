@@ -2,8 +2,8 @@
 #include<string>
 
 class ElementaryParticle
-{ 
-	public: 
+{ 	
+	public:
 	
 	//attributes
 	std::string name; 

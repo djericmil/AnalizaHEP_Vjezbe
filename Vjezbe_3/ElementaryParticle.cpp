@@ -65,7 +65,8 @@ void ElementaryParticle::printMomentum2()
 
 //reference vs pointers: https://www.geeksforgeeks.org/passing-by-pointer-vs-passing-by-reference-in-c/?ref=rp
 
-//part1 and part2 are decay product, must initialize ran in main()
+//part1 and part2 are decay products
+//must initialize re (random engine) in main(); re here is given as a class atribute Elementary particle.re
 
 void ElementaryParticle::bosonDecay(ElementaryParticle& part1, ElementaryParticle& part2)
 {	
