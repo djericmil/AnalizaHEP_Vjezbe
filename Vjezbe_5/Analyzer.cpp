@@ -1,104 +1,121 @@
+#define Analyzer_cxx
 #include "Analyzer.h"
-#include <iostream>
-#include <fstream>
-
-#include <TROOT.h>
-#include <TChain.h>
-#include <TFile.h>
-#include <TApplication.h>
-
-
-//output-input
-using std::cout;
-using std::cerr;
-using std::cin;
-using std::endl;
-using std::string;
-
-Analyzer::Analyzer()
+#include <TH2.h>
+#include <TStyle.h>
+#include <TCanvas.h>
+#include <TLorentzVector.h>
+#include <TLegend.h>
+void Analyzer::Loop()
 {
-	
+//   In a ROOT session, you can do:
+//      root> .L Analyzer.C
+//      root> Analyzer t
+//      root> t.GetEntry(12); // Fill t data members with entry number 12
+//      root> t.Show();       // Show values of entry 12
+//      root> t.Show(16);     // Read and show values of entry 16
+//      root> t.Loop();       // Loop on all entries
+//
+
+//     This is the loop skeleton where:
+//    jentry is the global entry number in the chain
+//    ientry is the entry number in the current Tree
+//  Note that the argument to GetEntry must be:
+//    jentry for TChain::GetEntry
+//    ientry for TTree::GetEntry and TBranch::GetEntry
+//
+//       To read only selected branches, Insert statements like:
+// METHOD1:
+//    fChain->SetBranchStatus("*",0);  // disable all branches
+//    fChain->SetBranchStatus("branchname",1);  // activate branchname
+// METHOD2: replace line
+//    fChain->GetEntry(jentry);       //read all branches
+//by  b_branchname->GetEntry(ientry); //read only this branch
+   if (fChain == 0) return;
+
+   Long64_t nentries = fChain->GetEntriesFast();
+
+   Long64_t nbytes = 0, nb = 0;
+   for (Long64_t jentry=0; jentry<nentries;jentry++) {
+      Long64_t ientry = LoadTree(jentry);
+      if (ientry < 0) break;
+      nb = fChain->GetEntry(jentry);   nbytes += nb;
+      // if (Cut(ientry) < 0) continue;
+   }
 }
 
 
-void Analyzer::readData(string path)
+
+void Analyzer::PlotHistogram()
 {
-	std::ifstream file(path);
-	string name;
-	double p1[4];
-	double p2[4];
+	TLorentzVector *cest1, *cest2, *rekstr;
 
-	if( !file )
-		cerr << "Can't open " << endl;
-
-	while( file >> name >> p1[0] >> p1[1] >> p1[2] >> p1[3] >> p2[0] >> p2[1] >> p2[2] >> p2[3] )
-	{
-		cout << name << " " << p1[0] << " " << p1[1] << " " << p1[2] << " " << p1[3] << " " << p2[0] << " " << p2[1] << " " << p2[2] << " " << p2[3] << endl;
-	}
-
-	file.close();
-}
-
-void Analyzer::convertTxtToRootFile(string path)
-{
-	TFile *tf = new TFile("Analysis.root", "RECREATE");
-	TTree *tree = new TTree("tree", "tree");
+	TH1F *h1 = new TH1F("h1", "Transverzalni moment 1", 100, 0, 120);
+	TH1F *h2 = new TH1F("h2", "Transverzalni moment 2", 100, 0, 120);
+	TH1F *h3 = new TH1F("h3", "Transverzalni moment rekonstrukcija", 100, 0, 120);
 	
-	std::ifstream file(path);
-	string name;
-	double p1[4];
-	double p2[4];
-	double trans1;
-	double trans2;
-	int i;
-
-	tree->Branch("name", &name, "name/C");  
-	tree->Branch("p1", p1, "p1[4]/D");  
-	tree->Branch("p2", p2, "p2[4]/D");  
+	TLegend *legend = new TLegend(1,0.7,0.48,0.9);
+	legend->SetHeader("Legenda", "C");
+	legend->AddEntry(h1,"Prva cestica","f");
+	legend->AddEntry(h2,"Druga cestica","f");
+	legend->AddEntry(h3,"Rekonstrukcija","f");
 	
-	tree->Branch("trans1", &trans1, "trans1/D");  
-	tree->Branch("trans2", &trans2, "trans2/D");  
 	
-	if( !file )
-	cerr << "Can't open " << endl;
-
-	while( file >> name >> p1[0] >> p1[1] >> p1[2] >> p1[3] >> p2[0] >> p2[1] >> p2[2] >> p2[3] )
-	{
-		trans1=sqrt(p1[1]*p1[1]+p1[2]*p1[2]);
-		trans2=sqrt(p2[1]*p2[1]+p2[2]*p2[2]);
-    	
-		tree->Fill();
-	}
-
-   
-	tf->Write();
-	tf->Close();
-	file.close();
-}
-
-void Analyzer::plotHistogram(string path)
-{
-
-	std::ifstream file(path);
-	if( !file )
-	cerr << "Can't open " << endl;
-
-	TH1F *histogram = new TH1F(const char *name, const char *title, Int_t nbinsx, Double_t xlow, Double_t xup);
 	
-	TCanvas *canvas = new TCanvas();
+	//loop over all entries..copy paste generirani kod
+	if (fChain == 0) return;
 
-	while( file >> name >> p1[0] >> p1[1] >> p1[2] >> p1[3] >> p2[0] >> p2[1] >> p2[2] >> p2[3] )
-	{
-		trans1=sqrt(p1[1]*p1[1]+p1[2]*p1[2]);
-		trans2=sqrt(p2[1]*p2[1]+p2[2]*p2[2]);
-    
-	}
+   Long64_t nentries = fChain->GetEntriesFast();
 
-	//name=identifikator 
-	//title= naslov na histogramu
-	//nbins= broj binova
-	//xlow, xup =granice svakog bina
+   Long64_t nbytes = 0, nb = 0;
+   for (Long64_t jentry=0; jentry<nentries;jentry++) {
+      Long64_t ientry = LoadTree(jentry);
+      if (ientry < 0) break;
+      nb = fChain->GetEntry(jentry);   nbytes += nb;
+      
+   	//rekonstrukcija
+
+	cest1 = new TLorentzVector(p1[1],p1[2],p1[3],p1[0]);
+	cest2 = new TLorentzVector(p2[1],p2[2],p2[3],p2[0]);
+	rekstr = new TLorentzVector();
+	*rekstr = *cest1+*cest2;	   
 	
+	//Filovanje
+	h1->Fill(trans1);
+	h2->Fill(trans2);
+	h3->Fill(rekstr->Pt()); //Pt=transverzalni moment
+   }
+
+	
+
+	TCanvas *canvas = new TCanvas("canvas", "canvas", 1400,600);
+	canvas->Divide(2,1);
+	gStyle->SetOptStat(111111);
+
+	h1->GetXaxis()->SetTitle("p_T");
+	h1->GetYaxis()->SetTitle("događaji");
+	h2->GetXaxis()->SetTitle("p_T");
+	h2->GetYaxis()->SetTitle("događaji");
+	h3->GetXaxis()->SetTitle("p_T");
+	h3->GetYaxis()->SetTitle("događaji");
+	
+
+	h1->SetFillStyle(1001);
+	h1->SetFillColor(kGreen-4);
+	h2->SetFillStyle(1001);
+	h2->SetFillColor(kBlue+3);
+	h3->SetFillStyle(1001);
+	h3->SetFillColor(kCyan-3);
+
+
+	canvas->cd(1);
+	h1->Draw();
+	h2->Draw("SAME");
+
+	canvas->cd(2);
+	h3->Draw();
+
+	legend->Draw();
+
+	canvas->SaveAs("rekstr.png");
 	
 }
-
