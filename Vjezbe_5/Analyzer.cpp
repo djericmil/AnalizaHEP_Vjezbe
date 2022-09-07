@@ -99,6 +99,10 @@ void Analyzer::PlotHistogram()
 	h3->GetYaxis()->SetTitle("događaji");
 	
 
+	h1->SetStats(0);
+	h2->SetStats(0);
+	h3->SetStats(0);
+
 	h1->SetFillStyle(1001);
 	h1->SetFillColor(kGreen-4);
 	h2->SetFillStyle(1001);
